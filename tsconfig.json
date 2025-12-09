@@ -7,8 +7,10 @@
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "nodenext",
-    "target": "esnext",
+    // "module": "nodenext",
+		"module": "commonjs",    
+    // "target": "esnext",
+		"target": "ES2020",   
     "types": [],
     // For nodejs:
     // "lib": ["esnext"],
@@ -35,7 +37,8 @@
     // Recommended Options
     "strict": true,
     "jsx": "react-jsx",
-    "verbatimModuleSyntax": true,
+    // 将 TypeScript 配置调整为允许在 CommonJS 模式下使用 ESM 风格（import from）导入，避免 ESM 导入被 TS1295 拦截
+    "verbatimModuleSyntax": false,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
