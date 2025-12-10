@@ -10,9 +10,58 @@ datasource db {
   provider = "sqlite"
 }
 
+// 用户表
 model User {
-	id        Int      @id @default(autoincrement())
-	email     String   @unique
-	name      String?
-	createdAt DateTime @default(now())
+  id                   Int            @id @default(autoincrement())
+  openid               String         @unique // 微信小程序openid
+  userNickName         String // 微信名
+  tasks                Task[] // 签到任务表
+  dailyTasks           DailyTask[] // 签到快照表
+  dailySummaries       DailySummary[] // 用户签到统计表
+  reminderSet          Boolean        @default(false) // 是否订阅消息
+  subscribedTemplateId String? // 消息模板id
+  createTime           DateTime       @default(now()) // 创建时间
+  updateTime           DateTime       @updatedAt // 每次更新自动改时间
+}
+
+// 用户签到任务表
+model Task {
+  id         Int         @id @default(autoincrement())
+  userId     Int // 用户表id
+  user       User        @relation(fields: [userId], references: [id]) // 关联用户表
+  title      String // 任务标题
+  sort       Int // 任务排序
+  createTime DateTime    @default(now()) // 创建时间
+  updateTime DateTime    @updatedAt // 每次更新自动改时间
+  dailyTasks DailyTask[] // 签到快照表
+}
+
+// 签到快照表
+model DailyTask {
+  id          Int      @id @default(autoincrement())
+  userId      Int // 用户表id
+  user        User     @relation(fields: [userId], references: [id]) // 关联用户表
+  taskId      Int? // 用户签到任务表id，可选，因为用户可以删除任务，但快照表中需要保留关联
+  task        Task?    @relation(fields: [taskId], references: [id]) // 关联用户签到任务表
+  date        DateTime // 快照日期
+  title       String // 快照时的任务名称，后面改 Task 也不影响历史
+  isCompleted Boolean  @default(false) // 是否签到
+  createTime  DateTime @default(now()) // 创建时间
+  updateTime  DateTime @updatedAt // 每次更新自动改时间
+
+  @@unique([userId, date, taskId]) // 用户每天一个签到任务只能有一条快照
+}
+
+// 用户签到统计表
+model DailySummary {
+  id             Int      @id @default(autoincrement())
+  userId         Int // 用户表id
+  user           User     @relation(fields: [userId], references: [id]) // 关联用户表
+  date           DateTime // 快照日期
+  totalTasks     Int // 总任务数
+  completedTasks Int      @default(0) // 已签到数
+  createTime     DateTime @default(now()) // 创建时间
+  updateTime     DateTime @updatedAt // 每次更新自动改时间
+
+  @@unique([userId, date]) // 用户每天只能有一条统计
 }
